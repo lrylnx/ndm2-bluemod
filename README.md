@@ -10,7 +10,7 @@ macOS 版 NeatDownloadManager 2 美化工具集：蓝色主题改造 + 全格式
 |---|---|
 | 蓝色进度条 | 主进度条 / 分段线程条 / 状态文字 全部从绿色改为 `#3D9BFF`（arm64+x64） |
 | 全格式图标 | 30+ 扩展名统一蓝色徽章图标（zip/pdf/exe/7z/rar/iso/dmg/doc/xls/mp3/mp4…） |
-| 通用图标机制 | 二进制注入 hook：任意扩展名自动查找 `<ext>.png`，加新格式零补丁 |
+| 通用图标机制 | 原版 `getIconForExtension:` 本身就会查 `<ext>.png`：加新格式只需丢 PNG 进 Resources，零补丁（历史上的二进制 hook 是误判"死代码"的产物，已废弃，见 docs/NOTES.md 第 12 节） |
 | 工具栏/侧边栏图标 | 统一圆角方块徽章风格 SVG 源文件 |
 | 分析工具 | arm64 反汇编 / selref 交叉引用 / 方法表解析（MachO + capstone） |
 
@@ -52,7 +52,8 @@ cp /Applications/NeatDownloadManager2.app/Contents/MacOS/NeatDownloadManager{,.b
 python3 scripts/patch_progress_color.py /Applications/NeatDownloadManager2.app
 
 # 2. 注入通用扩展名图标 hook（arm64）
-python3 scripts/patch_ext_icon_hook.py /Applications/NeatDownloadManager2.app
+# 2.（已废弃）扩展名图标 hook 不再需要：原版方法自带 imageNamed(<ext>) 查找
+#    直接把 icons/png/*.png 拷进 Resources 即可
 
 # 3. 放入自定义图标：把 icons/png/*.png 拷进 App Resources
 cp icons/png/*.png /Applications/NeatDownloadManager2.app/Contents/Resources/

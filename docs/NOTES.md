@@ -55,3 +55,13 @@ entsize 高位 `0x80000000` 表示 relative method list：count 在 +4，name/ty
 - 含 PlugIns/*.appex 时：先单独签 appex，再 `codesign --force --deep -s -` 主 App
 - 中断签名残留 `*.cstemp.cstemp*` 会污染 seal，先 `find <app> -name "*.cstemp*" -delete`
 - 验证：`codesign --verify --deep <app>`
+
+## 12. "死代码"判断必须覆盖 ObjC 方法表（视频嗅探下载卡死真因）
+
+- 现象：浏览器嗅探视频 → 点下载 → 主 App 转风火轮数分钟；普通文件下载正常；原版无此问题
+- 排查链：`sample` 抓到主线程 100% 忙在 NSTableView 布局循环 → 行图标 delegate (`+[类 getIconForExtension:category:]`) → `imageNamed:`(扩展名) 未命中 → 掉进另一个方法的 fallback → 无限重排
+- 根因：`patch_ext_icon_hook.py` 把 0x10002fb00 判定为"死代码 helper"并改写为 stub。实际上它是 **`+getIconForExtension:category:` 的方法实现（IMP）**——下载列表 delegate 经 objc_msgSend 间接调用它。扫描 bl/b 直接调用必然漏掉方法表引用
+- stub 在 `imageNamed:` 未命中时 cbz 跳进**另一个方法**的 fallback，该 fallback 收尾按自己方法的约定 release x19/x20——此时这两个寄存器装的是调用方（delegate）的活对象 → 过度释放 → 表格无限重建行
+- 触发面：任何"Resources 里没有同名 PNG"的扩展名行（B 站 DASH 分段 `.m4s` 首当其冲；`.ts`/`.mp4` 因有 PNG 而幸免）
+- 修复（2026-09-05）：还原 0x10002fb00 起的 10 条原始指令 + 还原 0x10002fd58 的 cbz 原始目标即可。**根本不需要 hook**——原版 `getIconForExtension:` 本来就执行 `[NSImage imageNamed: 小写扩展名]`，往 Resources 放 `<ext>.png` 天然生效；未命中返回 nil 走原版空图标路径，安全
+- **教训：改写任何函数前，先用 class-dump / 方法表解析确认它不是某个 ObjC 方法的 IMP；"全 __text 扫描零 bl/b"不等于死代码**

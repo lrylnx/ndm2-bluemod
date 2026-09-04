@@ -1,5 +1,19 @@
 #!/usr/bin/env python3
 """
+⚠️⚠️⚠️ 已废弃 — 严禁使用（2026-09-05）⚠️⚠️⚠️
+
+此脚本判定 0x10002fb00 为"死代码"是错误的：它是 +[类 getIconForExtension:category:]
+的方法实现（IMP），下载列表 delegate 经 objc_msgSend 间接调用。本脚本造成的破坏：
+  1. stub 的 imageNamed: 未命中路径跳进另一个方法的 fallback，收尾 release 了
+     调用方的活对象 → 任何 Resources 无同名 PNG 的扩展名行都会让主 App
+     陷入无限布局循环（转风火轮数分钟），视频嗅探（B 站 .m4s）必现。
+  2. 修复方式：还原 0x10002fb00 起 10 条原始指令 + 0x10002fd58 的 cbz 原始目标。
+  3. 自定义扩展名图标根本不需要此 hook：原版方法本来就执行
+     [NSImage imageNamed: 小写扩展名]，把 <ext>.png 放进 Resources 即可。
+
+保留本文件仅作案例记录，详见 docs/NOTES.md 第 12 节。
+"""
+
 NDM2 通用扩展名图标 hook（arm64）。
 
 原逻辑：行图标函数只硬编码 3 对扩展名比较（zip/pdf/exe -> imageNamed:），
@@ -111,4 +125,4 @@ def main(app):
     print('arm64 hook 注入完成。备份:', bak)
 
 if __name__ == '__main__':
-    main(sys.argv[1])
+    raise SystemExit('此脚本已废弃且有破坏性，禁止运行。见文件头说明与 docs/NOTES.md 第 12 节。')
