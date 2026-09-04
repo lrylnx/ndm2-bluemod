@@ -17,25 +17,68 @@ static void NDMDlog(NSString *fmt, ...) {
     if (f) { fprintf(f, "%s\n", s.UTF8String); fclose(f); }
 }
 
-// ---------------- 1) 进度条胶囊化 ----------------
+// ---------------- 1) 进度条：主条胶囊 / 线程条圆角（内部填充块四角也圆化） ----------------
 static IMP origProgA = NULL;   // NeatProgressBar 的原 drawRect
 static IMP origProgB = NULL;   // NeatSegmentsProgressBar 的原 drawRect
 
 static void NDMCapsuleDraw(id self, SEL _cmd, NSRect r) {
     Class B = NSClassFromString(@"NeatSegmentsProgressBar");
-    IMP orig = (B && [(Class)B isSubclassOfClass:[NSView class]] && [self isKindOfClass:B]) ? origProgB : origProgA;
+    BOOL isSeg = B && [self isKindOfClass:B];
+    IMP orig = isSeg ? origProgB : origProgA;
     if (r.size.height < 4 || r.size.width < 4 || !orig) {
         if (orig) ((void(*)(id,SEL,NSRect))orig)(self, _cmd, r);
         return;
     }
     NSGraphicsContext *ctx = [NSGraphicsContext currentContext];
     [ctx saveGraphicsState];
-    NSRect rr = NSInsetRect(r, 0.5, 0.5);
-    NSBezierPath *p = [NSBezierPath bezierPathWithRoundedRect:rr
-                      xRadius:r.size.height/2.0 yRadius:r.size.height/2.0];
+    NSBezierPath *p;
+    if (isSeg) {
+        // 线程条：半径 4 圆角 clip → 内部线程填充块四角、分隔线端点一并圆化
+        p = [NSBezierPath bezierPathWithRoundedRect:NSInsetRect(r, 1.0, 1.0)
+                            xRadius:4 yRadius:4];
+    } else {
+        // 主进度条：整条胶囊
+        p = [NSBezierPath bezierPathWithRoundedRect:NSInsetRect(r, 0.5, 0.5)
+                            xRadius:r.size.height/2.0 yRadius:r.size.height/2.0];
+    }
     [p addClip];
     ((void(*)(id,SEL,NSRect))orig)(self, _cmd, r);
     [ctx restoreGraphicsState];
+}
+
+// ---------------- 1b) 文字按钮现代化（纯静态样式，无动效/hover/transform） ----------------
+static void NDMStyleButton(NSButton *b) {
+    if (!b.bordered || b.title.length == 0) return;   // 只处理带文字的 push button，checkbox/radio 不碰
+    b.bordered = NO;
+    b.wantsLayer = YES;
+    b.layer.cornerRadius = 6;
+    b.layer.borderWidth = 1;
+    b.layer.borderColor = [NSColor colorWithCalibratedRed:0.80 green:0.85 blue:0.90 alpha:1].CGColor;
+    b.layer.backgroundColor = [NSColor colorWithCalibratedWhite:0.99 alpha:1].CGColor;
+}
+
+static void NDMPatch(void);
+
+static void NDMScanButtons(void) {
+    int fresh = 0;
+    for (NSWindow *w in [NSApp windows]) {
+        if (!w.contentView) continue;
+        NSView *root = w.contentView;
+        while (root.superview && root.superview.window == w) root = root.superview;
+        NSMutableArray<NSView *> *stack = [NSMutableArray arrayWithObject:root];
+        while (stack.count) {
+            NSView *v = stack.lastObject; [stack removeLastObject];
+            if ([v isKindOfClass:[NSButton class]] && !v.hiddenOrHasHiddenAncestor) {
+                if (!objc_getAssociatedObject(v, NDMScanButtons)) {
+                    objc_setAssociatedObject(v, NDMScanButtons, @YES, OBJC_ASSOCIATION_RETAIN);
+                    NDMStyleButton((NSButton *)v);
+                    fresh++;
+                }
+            }
+            [stack addObjectsFromArray:v.subviews];
+        }
+    }
+    if (fresh) NDMDlog(@"buttons styled: %d", fresh);
 }
 
 // ---------------- 2) 选中行圆角裁剪（覆盖 NSTableRowView 及其所有子类） ----------------
@@ -152,5 +195,14 @@ __attribute__((constructor))
 static void NDMEntry(void) {
     // 等 App 的自定义类完成注册后安装
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)),
-                   dispatch_get_main_queue(), ^{ NDMPatch(); });
+                   dispatch_get_main_queue(), ^{
+        NDMPatch();
+        // 按钮即时扫描：窗口一成为 key 立即扫（消除"先方块后圆角"延迟）
+        [[NSNotificationCenter defaultCenter]
+            addObserverForName:NSWindowDidBecomeKeyNotification object:nil
+            queue:NSOperationQueue.mainQueue
+            usingBlock:^(NSNotification *note){ NDMScanButtons(); }];
+        // 兜底：0.4s 短周期扫描（覆盖不成 key 的窗口/延迟创建的视图）
+        [NSTimer scheduledTimerWithTimeInterval:0.4 repeats:YES block:^(NSTimer *t){ NDMScanButtons(); }];
+    });
 }
