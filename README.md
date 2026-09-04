@@ -16,9 +16,20 @@ macOS 版 NeatDownloadManager 2 美化工具集：蓝色主题改造 + 全格式
 
 ## 截图
 
+### 改造效果
+
 ![全格式图标](screenshots/all_icons.png)
 ![下载列表实测](screenshots/list_rows.png)
 ![蓝色进度条](screenshots/blue_progress.png)
+
+### 界面实拍（汉化版）
+
+![主界面](screenshots/main_window.png)
+![设置-常规](screenshots/settings_general.png)
+![浏览器扩展](screenshots/browser_extensions.png)
+![完全退出确认](screenshots/quit_dialog.png)
+![下载进行中](screenshots/download_active.png)
+![下载完成](screenshots/download_done.png)
 
 ## 目录结构
 
