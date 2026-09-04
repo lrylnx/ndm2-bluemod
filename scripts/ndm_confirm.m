@@ -74,19 +74,35 @@ static NSString *DeriveNameFromURL(NSString *url) {
     return name;
 }
 
-// 把 payload 中 3: 文件名行替换为 newName（没有则追加）
+// 把 payload 中 3: 文件名行替换为 newName（没有则插到 2: 行之后）
+// 注意：不能追加到末尾——payload 末尾可能有空行/尾部标记，追加会破坏解析
 static NSString *ReplaceNameInPayload(NSString *payload, NSString *newName) {
     NSMutableArray *lines = [[payload componentsSeparatedByString:@"\r\n"] mutableCopy];
-    NSMutableArray *out = [NSMutableArray array];
     BOOL replaced = NO;
-    for (NSString *line in lines) {
-        if (!replaced && [line hasPrefix:@"3:"]) {
-            [out addObject:[NSString stringWithFormat:@"3:%@", newName]];
-            replaced = YES;
-        } else [out addObject:line];
+    for (NSUInteger i = 0; i < lines.count; i++) {
+        if ([lines[i] hasPrefix:@"3:"]) {
+            if (!replaced) {
+                lines[i] = [NSString stringWithFormat:@"3:%@", newName];
+                replaced = YES;
+            } else {
+                [lines removeObjectAtIndex:i--];
+            }
+        }
     }
-    if (!replaced) [out addObject:[NSString stringWithFormat:@"3:%@", newName]];
-    return [out componentsJoinedByString:@"\r\n"];
+    if (!replaced) {
+        for (NSUInteger i = 0; i < lines.count; i++) {
+            if ([lines[i] hasPrefix:@"2:"]) {
+                [lines insertObject:[NSString stringWithFormat:@"3:%@", newName]
+                            atIndex:i + 1];
+                replaced = YES;
+                break;
+            }
+        }
+        if (!replaced) [lines addObject:[NSString stringWithFormat:@"3:%@", newName]];
+    }
+    NSString *out = [lines componentsJoinedByString:@"\r\n"];
+    NSLog(@"[ndm_confirm] 最终payload=[%@]", [out stringByReplacingOccurrencesOfString:@"\r\n" withString:@" | "]);
+    return out;
 }
 
 #pragma mark - 确认窗口
@@ -318,6 +334,12 @@ static void HookedHandleRequest(id self_, SEL _cmd, id payload) {
         if (orig) ((void(*)(id, SEL, id))orig)(self_, _cmd, payload);
         return;
     }
+    // 调试开关: defaults write com.NeatDownloadManager ndm_confirm_passthrough -bool YES
+    if ([NSUserDefaults.standardUserDefaults boolForKey:@"ndm_confirm_passthrough"]) {
+        NSLog(@"[ndm_confirm] passthrough 直通模式");
+        if (orig) ((void(*)(id, SEL, id))orig)(self_, _cmd, payload);
+        return;
+    }
     NSString *origFname = fname;                 // payload 里的原始文件名（可能为 nil）
     if (!fname.length) fname = DeriveNameFromURL(url);   // 兜底：从 URL 提取
     NSLog(@"[ndm_confirm] payload=[%@]",
@@ -344,12 +366,12 @@ static void HookedHandleRequest(id self_, SEL _cmd, id payload) {
         return;                      // 取消 → 不调用原方法，下载不开始
     }
 
-    // 用户改了文件名，或 payload 本身没有 3: 行但有可用文件名 → 写入 3: 行
+    // 用户改了文件名才改写 payload（保持与原生流程一致，避免干扰引擎探测）
     NSString *newName = r[@"name"];
     BOOL needReplace = NO;
     if (newName.length) {
         if (origFname.length) needReplace = ![newName isEqualToString:origFname];
-        else if (fname.length) needReplace = YES;
+        else if (fname.length) needReplace = ![newName isEqualToString:fname];
     }
     if (needReplace) payload = ReplaceNameInPayload(payload, newName);
 
@@ -422,5 +444,25 @@ static void ndm_confirm_init(void) {
                      (IMP)HookedDLInitMKV);
 
         NSLog(@"[ndm_confirm] hooks installed");
+
+        // 调试观察器: defaults write com.NeatDownloadManager ndm_confirm_watch -bool YES
+        if ([NSUserDefaults.standardUserDefaults boolForKey:@"ndm_confirm_watch"]) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [NSTimer scheduledTimerWithTimeInterval:3.0 repeats:YES block:^(NSTimer *t) {
+                    static Ivar ivConn = NULL, ivName = NULL;
+                    if (!ivConn) {
+                        ivConn = class_getInstanceVariable(objc_getClass("NeatDownloadWindow"), "lastConnectionsCount");
+                        ivName = class_getInstanceVariable(objc_getClass("NeatDownloadWindow"), "fileName");
+                    }
+                    for (NSWindow *w in NSApp.windows) {
+                        if (![w isKindOfClass:objc_getClass("NeatDownloadWindow")]) continue;
+                        NSString *name = ivName ? object_getIvar(w, ivName) : nil;
+                        long long conn = ivConn ? *(long long *)((char *)(__bridge void *)w + ivar_getOffset(ivConn)) : -1;
+                        NSLog(@"[ndm_confirm][watch] %@ connections=%lld", name, conn);
+                    }
+                }];
+            });
+            NSLog(@"[ndm_confirm] watcher ON");
+        }
     }
 }
