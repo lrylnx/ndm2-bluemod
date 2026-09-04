@@ -47,14 +47,24 @@ static void NDMCapsuleDraw(id self, SEL _cmd, NSRect r) {
 }
 
 // ---------------- 1b) 文字按钮现代化（纯静态样式，无动效/hover/transform） ----------------
+static NSColor *NDMBorderNormal(void) {
+    return [NSColor colorWithCalibratedRed:0.80 green:0.85 blue:0.90 alpha:1];
+}
+static NSColor *NDMBorderFocused(void) {
+    return [NSColor colorWithCalibratedRed:0.15 green:0.45 blue:0.95 alpha:1];
+}
+
 static void NDMStyleButton(NSButton *b) {
     if (!b.bordered || b.title.length == 0) return;   // 只处理带文字的 push button，checkbox/radio 不碰
     b.bordered = NO;
+    // 键盘焦点不再画原生 focus ring（与静态样式叠加会显示异常），改由 NDMRestyleFocus 用边框变蓝表示
+    b.focusRingType = NSFocusRingTypeNone;
     b.wantsLayer = YES;
     b.layer.cornerRadius = 6;
     b.layer.borderWidth = 1;
-    b.layer.borderColor = [NSColor colorWithCalibratedRed:0.80 green:0.85 blue:0.90 alpha:1].CGColor;
+    b.layer.borderColor = NDMBorderNormal().CGColor;
     b.layer.backgroundColor = [NSColor colorWithCalibratedWhite:0.99 alpha:1].CGColor;
+    objc_setAssociatedObject(b, NDMStyleButton, @YES, OBJC_ASSOCIATION_RETAIN);
 }
 
 static void NDMPatch(void);
@@ -79,6 +89,56 @@ static void NDMScanButtons(void) {
         }
     }
     if (fresh) NDMDlog(@"buttons styled: %d", fresh);
+}
+
+// 焦点态刷新：firstResponder 是美化过的按钮 → 边框加粗变蓝；其余恢复默认边框
+static void NDMRestyleFocus(void) {
+    for (NSWindow *w in [NSApp windows]) {
+        if (!w.contentView) continue;
+        NSView *root = w.contentView;
+        while (root.superview && root.superview.window == w) root = root.superview;
+        NSMutableArray<NSView *> *stack = [NSMutableArray arrayWithObject:root];
+        while (stack.count) {
+            NSView *v = stack.lastObject; [stack removeLastObject];
+            if ([v isKindOfClass:[NSButton class]]
+                && objc_getAssociatedObject(v, NDMStyleButton)) {
+                NSButton *b = (NSButton *)v;
+                BOOL focused = (w.firstResponder == b);
+                b.layer.borderWidth = focused ? 1.5 : 1;
+                b.layer.borderColor = focused ? NDMBorderFocused().CGColor
+                                              : NDMBorderNormal().CGColor;
+                b.layer.backgroundColor = focused
+                    ? [NSColor colorWithCalibratedRed:0.93 green:0.96 blue:1.0 alpha:1].CGColor
+                    : [NSColor colorWithCalibratedWhite:0.99 alpha:1].CGColor;
+            }
+            [stack addObjectsFromArray:v.subviews];
+        }
+    }
+}
+
+// 启动兜底：补丁安装晚于 App 首次绘制，恢复的初始选中行此时还是原生方块 → 全量扫描补圆角
+static void NDMSweepSelection(void) {
+    int fixed = 0;
+    for (NSWindow *w in [NSApp windows]) {
+        if (!w.contentView) continue;
+        NSView *root = w.contentView;
+        while (root.superview && root.superview.window == w) root = root.superview;
+        NSMutableArray<NSView *> *stack = [NSMutableArray arrayWithObject:root];
+        while (stack.count) {
+            NSView *v = stack.lastObject; [stack removeLastObject];
+            if ([v isKindOfClass:[NSTableRowView class]] && ((NSTableRowView *)v).isSelected) {
+                CALayer *ly = v.layer;
+                if (ly && ly.cornerRadius != 6) {   // 已是圆角就跳过，避免周期性无谓重绘
+                    ly.cornerRadius = 6;
+                    ly.masksToBounds = YES;
+                    [v setNeedsDisplay:YES];
+                    fixed++;
+                }
+            }
+            [stack addObjectsFromArray:v.subviews];
+        }
+    }
+    if (fixed) NDMDlog(@"sweep: rounded %d pre-selected rows", fixed);
 }
 
 // ---------------- 2) 选中行圆角裁剪（覆盖 NSTableRowView 及其所有子类） ----------------
@@ -197,12 +257,21 @@ static void NDMEntry(void) {
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)),
                    dispatch_get_main_queue(), ^{
         NDMPatch();
+        NDMSweepSelection();   // 补圆角：补丁安装前已存在的初始选中行
         // 按钮即时扫描：窗口一成为 key 立即扫（消除"先方块后圆角"延迟）
         [[NSNotificationCenter defaultCenter]
             addObserverForName:NSWindowDidBecomeKeyNotification object:nil
             queue:NSOperationQueue.mainQueue
-            usingBlock:^(NSNotification *note){ NDMScanButtons(); }];
-        // 兜底：0.4s 短周期扫描（覆盖不成 key 的窗口/延迟创建的视图）
-        [NSTimer scheduledTimerWithTimeInterval:0.4 repeats:YES block:^(NSTimer *t){ NDMScanButtons(); }];
+            usingBlock:^(NSNotification *note){
+                NDMScanButtons();
+                NDMSweepSelection();   // 后开窗口（属性/设置）可能自带初始选中
+                NDMRestyleFocus();
+            }];
+        // 兜底：0.4s 短周期扫描（覆盖不成 key 的窗口/延迟创建的视图/焦点变化）
+        [NSTimer scheduledTimerWithTimeInterval:0.4 repeats:YES block:^(NSTimer *t){
+            NDMScanButtons();
+            NDMSweepSelection();
+            NDMRestyleFocus();
+        }];
     });
 }
