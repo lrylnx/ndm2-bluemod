@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 908 456"><rect width="100%" height="100%" fill="#f0f0f0"/><g transform="translate(8 8)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="63.7" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="38" fill="#ffffff">7Z</text>
+</svg></g><g transform="translate(118 8)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="61.5" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="32" fill="#ffffff">RAR</text>
+</svg></g><g transform="translate(228 8)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="61.5" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="32" fill="#ffffff">ISO</text>
+</svg></g><g transform="translate(338 8)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="61.5" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="32" fill="#ffffff">DMG</text>
+</svg></g><g transform="translate(448 8)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="61.5" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="32" fill="#ffffff">REG</text>
+</svg></g><g transform="translate(558 8)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="61.5" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="32" fill="#ffffff">BAT</text>
+</svg></g><g transform="translate(668 8)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="61.5" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="32" fill="#ffffff">CMD</text>
+</svg></g><g transform="translate(778 8)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="61.5" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="32" fill="#ffffff">DOC</text>
+</svg></g><g transform="translate(8 118)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="61.5" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="32" fill="#ffffff">XLS</text>
+</svg></g><g transform="translate(118 118)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="61.5" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="32" fill="#ffffff">MP3</text>
+</svg></g><g transform="translate(228 118)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="61.5" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="32" fill="#ffffff">MP4</text>
+</svg></g><g transform="translate(338 118)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="59.7" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="27" fill="#ffffff">M3U8</text>
+</svg></g><g transform="translate(448 118)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="63.7" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="38" fill="#ffffff">TS</text>
+</svg></g><g transform="translate(558 118)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="61.5" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="32" fill="#ffffff">JPG</text>
+</svg></g><g transform="translate(668 118)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="61.5" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="32" fill="#ffffff">PNG</text>
+</svg></g><g transform="translate(778 118)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="61.5" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="32" fill="#ffffff">GIF</text>
+</svg></g><g transform="translate(8 228)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="59.7" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="27" fill="#ffffff">ICNS</text>
+</svg></g><g transform="translate(118 228)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="61.5" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="32" fill="#ffffff">TXT</text>
+</svg></g><g transform="translate(228 228)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="63.7" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="38" fill="#ffffff">MD</text>
+</svg></g><g transform="translate(338 228)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="61.5" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="32" fill="#ffffff">CSV</text>
+</svg></g><g transform="translate(448 228)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="61.5" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="32" fill="#ffffff">PPT</text>
+</svg></g><g transform="translate(558 228)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="61.5" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="32" fill="#ffffff">PPT</text>
+</svg></g><g transform="translate(668 228)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="61.5" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="32" fill="#ffffff">PKG</text>
+</svg></g><g transform="translate(778 228)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="59.7" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="27" fill="#ffffff">HEIC</text>
+</svg></g><g transform="translate(8 338)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="59.7" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="27" fill="#ffffff">WEBP</text>
+</svg></g><g transform="translate(118 338)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="61.5" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="32" fill="#ffffff">ICO</text>
+</svg></g><g transform="translate(228 338)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="61.5" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="32" fill="#ffffff">SVG</text>
+</svg></g><g transform="translate(338 338)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="61.5" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="32" fill="#ffffff">MOV</text>
+</svg></g><g transform="translate(448 338)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#3D9BFF"/></linearGradient></defs>
+<rect x="6" y="6" width="88" height="88" rx="22" fill="url(#g)"/>
+<text x="50" y="61.5" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="32" fill="#ffffff">MKV</text>
+</svg></g></svg>
