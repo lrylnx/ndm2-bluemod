@@ -65,3 +65,13 @@ entsize 高位 `0x80000000` 表示 relative method list：count 在 +4，name/ty
 - 触发面：任何"Resources 里没有同名 PNG"的扩展名行（B 站 DASH 分段 `.m4s` 首当其冲；`.ts`/`.mp4` 因有 PNG 而幸免）
 - 修复（2026-09-05）：还原 0x10002fb00 起的 10 条原始指令 + 还原 0x10002fd58 的 cbz 原始目标即可。**根本不需要 hook**——原版 `getIconForExtension:` 本来就执行 `[NSImage imageNamed: 小写扩展名]`，往 Resources 放 `<ext>.png` 天然生效；未命中返回 nil 走原版空图标路径，安全
 - **教训：改写任何函数前，先用 class-dump / 方法表解析确认它不是某个 ObjC 方法的 IMP；"全 __text 扫描零 bl/b"不等于死代码**
+
+## 13. 徽章不显示的完整真相（2026-09-05 凌晨）
+- 图标体系：`+getIconForExtension:category:`(IMP 0x2fc30) = 特例映射 + NSWorkspace iconForFile 原生系统图标；`+getCustomIcon:category:`(IMP 0x2fb00, NeatNsUtils) = `[NSImage imageNamed: 小写参数]`。蓝色徽章只有走 getCustomIcon 才显示。
+- 修复组合：① delegate 0x43b3c `mov x3, x24`（15:30 遗留，等价传 ext）；② 0x2fb10 `mov x0, x2`（getCustomIcon 用参数1=ext）；③ 0x2fc30 else 块改写为 `[NeatNsUtils getCustomIcon:ext category:ext]` + 直跳尾部（nil 安全），原 iconForFile 段 NOP。
+- 教训：两个相邻函数名相似、行为文档全无，必须用 class_getMethodImplementation(object_getClass(cls), sel) 定位真实 IMP，别信反汇编线性扫描；多会话并行操作同一 App 时，改前先 stat mtime + dump 现场。
+
+## 13. 徽章不显示的完整真相（2026-09-05 凌晨）
+- 图标体系：`+getIconForExtension:category:`(IMP 0x2fc30) = 特例映射 + NSWorkspace iconForFile 原生系统图标；`+getCustomIcon:category:`(IMP 0x2fb00, NeatNsUtils) = `[NSImage imageNamed: 小写参数]`。蓝色徽章只有走 getCustomIcon 才显示。
+- 修复组合：① delegate 0x43b3c `mov x3, x24`（15:30 遗留，等价传 ext）；② 0x2fb10 `mov x0, x2`（getCustomIcon 用参数1=ext）；③ 0x2fc30 else 块改写为 `[NeatNsUtils getCustomIcon:ext category:ext]` + 直跳尾部（nil 安全），原 iconForFile 段 NOP。
+- 教训：两个相邻函数名相似、行为文档全无，必须用 class_getMethodImplementation(object_getClass(cls), sel) 定位真实 IMP，别信反汇编线性扫描；多会话并行操作同一 App 时，改前先 stat mtime + dump 现场。
