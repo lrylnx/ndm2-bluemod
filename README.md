@@ -12,6 +12,7 @@ macOS 版 NeatDownloadManager 2 美化工具集：蓝色主题改造 + 全格式
 | 全格式图标 | 30+ 扩展名统一蓝色徽章图标（zip/pdf/exe/7z/rar/iso/dmg/doc/xls/mp3/mp4…） |
 | 通用图标机制 | 原版 `getIconForExtension:` 本身就会查 `<ext>.png`：加新格式只需丢 PNG 进 Resources，零补丁（历史上的二进制 hook 是误判"死代码"的产物，已废弃，见 docs/NOTES.md 第 12 节） |
 | 工具栏/侧边栏图标 | 统一圆角方块徽章风格 SVG 源文件 |
+| 下载确认窗口 | IDM 风格：浏览器发起下载先弹确认窗（网址/文件名/浏览目录/开始取消），`ndm_confirm.dylib` swizzle 实现，见 `docs/CONFIRM_DIALOG.md` |
 | 分析工具 | arm64 反汇编 / selref 交叉引用 / 方法表解析（MachO + capstone） |
 
 ## 截图
