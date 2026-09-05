@@ -421,6 +421,85 @@ static id HookedDLInitMKV(id self_, SEL _cmd, id values, id menu, void *request,
         self_, _cmd, values, menu, request, tempPath, finalPath, rowIdx, resume);
 }
 
+#pragma mark - 设置/浏览器/关于 弹窗居中到主界面
+
+// 只处理这三个弹窗: 窗口本身是普通 NSWindow, NeatXxxWindow 是其委托类
+static BOOL IsManagedPopup(NSWindow *w) {
+    id del = w.delegate;
+    if (!del) return NO;
+    NSString *cls = NSStringFromClass(object_getClass(del));
+    return [cls isEqualToString:@"NeatSettingWindow"]
+        || [cls isEqualToString:@"NeatBrowsersWindow"]
+        || [cls isEqualToString:@"NeatAboutWindow"];
+}
+
+static NSPoint CenterInRect(NSRect inner, NSRect outer) {
+    return NSMakePoint(outer.origin.x + (outer.size.width - inner.size.width) / 2,
+                       outer.origin.y + (outer.size.height - inner.size.height) / 2);
+}
+
+// 居中到主界面窗口；找不到则取最大的可见窗口；再不行就屏幕居中
+static void CenterPopupOverMain(NSWindow *w) {
+    NSRect f = w.frame;
+    NSPoint o = NSZeroPoint;
+    BOOL done = NO;
+
+    NSWindow *main = [NSApp mainWindow];
+    if (!done && main && main != w && main.frame.size.width > 0) {
+        o = CenterInRect(f, main.frame);
+        done = YES;
+    }
+    if (!done) {   // mainWindow 为空（托盘态）→ 用最大的可见窗口当主界面
+        NSWindow *best = nil;
+        for (NSWindow *cand in [NSApp windows]) {
+            if (cand == w || !cand.isVisible || IsManagedPopup(cand)) continue;
+            CGFloat a = cand.frame.size.width * cand.frame.size.height;
+            CGFloat ba = best ? best.frame.size.width * best.frame.size.height : 0;
+            if (a > ba) best = cand;
+        }
+        if (best) { o = CenterInRect(f, best.frame); done = YES; }
+    }
+    if (!done) {
+        NSRect sf = NSScreen.mainScreen.visibleFrame;
+        o = CenterInRect(f, sf);
+    }
+    [w setFrameOrigin:o];
+    NSLog(@"[ndm_confirm] 弹窗居中: %@ -> (%.0f, %.0f)", NSStringFromClass(w.class), o.x, o.y);
+}
+
+static void HookedMakeKeyAndOrderFront(id self_, SEL _cmd, id sender) {
+    if (IsManagedPopup(self_)) CenterPopupOverMain(self_);
+    IMP orig = OrigIMP(objc_getClass("NSWindow"), @selector(makeKeyAndOrderFront:));
+    if (orig) ((void(*)(id, SEL, id))orig)(self_, _cmd, sender);
+}
+
+static void HookedOrderFront(id self_, SEL _cmd, id sender) {
+    if (IsManagedPopup(self_)) CenterPopupOverMain(self_);
+    IMP orig = OrigIMP(objc_getClass("NSWindow"), @selector(orderFront:));
+    if (orig) ((void(*)(id, SEL, id))orig)(self_, _cmd, sender);
+}
+
+// showWindow: 按控制器类名过滤（NeatSettingWindow 等是 NSWindowController 子类）
+static void HookedShowWindow(id self_, SEL _cmd, id sender) {
+    NSString *cls = NSStringFromClass(object_getClass(self_));
+    IMP orig = OrigIMP(objc_getClass("NSWindowController"), @selector(showWindow:));
+    if (orig) ((void(*)(id, SEL, id))orig)(self_, _cmd, sender);
+    if ([cls isEqualToString:@"NeatSettingWindow"]
+        || [cls isEqualToString:@"NeatBrowsersWindow"]
+        || [cls isEqualToString:@"NeatAboutWindow"]) {
+        NSWindow *w = [(NSWindowController *)self_ window];
+        if (w) CenterPopupOverMain(w);   // 显示之后再摆位置，防止被 nib 坐标覆盖
+    }
+}
+
+// 注意: orderWindow:relativeTo: 的第二个参数是窗口编号(NSInteger)而非对象指针,
+// 声明成 id 会被 ARC retain 整数值 → SIGSEGV
+static void HookedOrderWindow(id self_, SEL _cmd, NSInteger place, NSInteger otherWinNum) {
+    if (IsManagedPopup(self_)) CenterPopupOverMain(self_);
+    IMP orig = OrigIMP(objc_getClass("NSWindow"), @selector(orderWindow:relativeTo:));
+    if (orig) ((void(*)(id, SEL, NSInteger, NSInteger))orig)(self_, _cmd, place, otherWinNum);
+}
+
 __attribute__((constructor))
 static void ndm_confirm_init(void) {
     @autoreleasepool {
@@ -442,6 +521,13 @@ static void ndm_confirm_init(void) {
             Exchange(gDlWinMKVClass,
                      @selector(initMKVWithValues:appStatusMenu:request:tempOutputPath:finalOutputPath:rowIdx:doResume:),
                      (IMP)HookedDLInitMKV);
+
+        // 设置/浏览器/关于 弹窗居中到主界面
+        Class winCls = objc_getClass("NSWindow");
+        Exchange(winCls, @selector(makeKeyAndOrderFront:), (IMP)HookedMakeKeyAndOrderFront);
+        Exchange(winCls, @selector(orderFront:), (IMP)HookedOrderFront);
+        Exchange(winCls, @selector(orderWindow:relativeTo:), (IMP)HookedOrderWindow);
+        Exchange(objc_getClass("NSWindowController"), @selector(showWindow:), (IMP)HookedShowWindow);
 
         NSLog(@"[ndm_confirm] hooks installed");
 
