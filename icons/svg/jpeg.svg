@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
 <defs>
 <linearGradient id="g" x1="0" y1="0" x2="0.55" y2="1">
-<stop offset="0" stop-color="#818CF8"/><stop offset="1" stop-color="#4F46E5"/></linearGradient>
+<stop offset="0" stop-color="#F9A8D4"/><stop offset="1" stop-color="#DB2777"/></linearGradient>
 <linearGradient id="s" x1="0" y1="0" x2="0" y2="1">
 <stop offset="0" stop-color="#ffffff" stop-opacity="0.30"/>
 <stop offset="0.45" stop-color="#ffffff" stop-opacity="0.05"/>
@@ -10,5 +10,5 @@
 <rect x="5" y="5" width="90" height="90" rx="24" fill="url(#g)"/>
 <rect x="5" y="5" width="90" height="90" rx="24" fill="url(#s)"/>
 <rect x="6.25" y="6.25" width="87.5" height="87.5" rx="22.75" fill="none" stroke="#ffffff" stroke-opacity="0.35" stroke-width="1.5"/>
-<text x="50" y="50" text-anchor="middle" dominant-baseline="central" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="30" fill="#ffffff">EXE</text>
+<text x="50" y="50" text-anchor="middle" dominant-baseline="central" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="25" fill="#ffffff">JPEG</text>
 </svg>

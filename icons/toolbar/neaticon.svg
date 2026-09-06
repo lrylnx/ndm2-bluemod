@@ -1,6 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0" y1="0" x2="0.9" y2="1">
-<stop offset="0" stop-color="#9FCCFF"/><stop offset="1" stop-color="#2E8AE6"/></linearGradient></defs>
-<rect x="4.0" y="4.0" width="92.0" height="92.0" rx="20.24" fill="url(#g)"/>
-<g stroke="#ffffff" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
-<path d="M50.0 28.999999999999996 V56.00000000000001"/><path d="M39.0 46.99999999999999 L50.0 58.49999999999999 L61.0 46.99999999999999"/>
-<path d="M37.0 66.0 H63.0"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs>
+<linearGradient id="g" x1="0" y1="0" x2="0.5" y2="1">
+<stop offset="0" stop-color="#6FBEFF"/><stop offset="0.55" stop-color="#3D9BFF"/><stop offset="1" stop-color="#2477D6"/></linearGradient>
+<linearGradient id="s" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#ffffff" stop-opacity="0.35"/>
+<stop offset="0.5" stop-color="#ffffff" stop-opacity="0.04"/>
+<stop offset="1" stop-color="#000000" stop-opacity="0.12"/></linearGradient>
+</defs>
+<rect x="6" y="6" width="88" height="88" rx="26" fill="url(#g)"/>
+<rect x="6" y="6" width="88" height="88" rx="26" fill="url(#s)"/>
+<rect x="7.5" y="7.5" width="85" height="85" rx="24.5" fill="none" stroke="#ffffff" stroke-opacity="0.4" stroke-width="1.4"/>
+<g stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none">
+<path d="M50 26 V50"/>
+<path d="M38 40 L50 52 L62 40"/>
+<path d="M31 59 V67 a3 3 0 0 0 3 3 H66 a3 3 0 0 0 3 -3 V59"/>
+</g>
+</svg>

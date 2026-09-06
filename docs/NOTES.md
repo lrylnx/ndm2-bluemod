@@ -71,7 +71,9 @@ entsize 高位 `0x80000000` 表示 relative method list：count 在 +4，name/ty
 - 修复组合：① delegate 0x43b3c `mov x3, x24`（15:30 遗留，等价传 ext）；② 0x2fb10 `mov x0, x2`（getCustomIcon 用参数1=ext）；③ 0x2fc30 else 块改写为 `[NeatNsUtils getCustomIcon:ext category:ext]` + 直跳尾部（nil 安全），原 iconForFile 段 NOP。
 - 教训：两个相邻函数名相似、行为文档全无，必须用 class_getMethodImplementation(object_getClass(cls), sel) 定位真实 IMP，别信反汇编线性扫描；多会话并行操作同一 App 时，改前先 stat mtime + dump 现场。
 
-## 13. 徽章不显示的完整真相（2026-09-05 凌晨）
-- 图标体系：`+getIconForExtension:category:`(IMP 0x2fc30) = 特例映射 + NSWorkspace iconForFile 原生系统图标；`+getCustomIcon:category:`(IMP 0x2fb00, NeatNsUtils) = `[NSImage imageNamed: 小写参数]`。蓝色徽章只有走 getCustomIcon 才显示。
-- 修复组合：① delegate 0x43b3c `mov x3, x24`（15:30 遗留，等价传 ext）；② 0x2fb10 `mov x0, x2`（getCustomIcon 用参数1=ext）；③ 0x2fc30 else 块改写为 `[NeatNsUtils getCustomIcon:ext category:ext]` + 直跳尾部（nil 安全），原 iconForFile 段 NOP。
-- 教训：两个相邻函数名相似、行为文档全无，必须用 class_getMethodImplementation(object_getClass(cls), sel) 定位真实 IMP，别信反汇编线性扫描；多会话并行操作同一 App 时，改前先 stat mtime + dump 现场。
+## 14. 工具栏/浏览器/状态栏图标的资源定位（2026-09-07）
+- 工具栏按钮图标**不是**代码硬编码，而是 `Base.lproj/NeatMainWindow.nib` 里 `NSToolbarItem` 的 `NSToolbarItemImage → NSImage → IBDesignImageConfiguration → NSResourceName`。用 `plutil -p keyedobjects-110000.nib | grep NSResourceName` 顺藤摸到资源名。
+- 实测映射：新建=`Newurl`、继续=`Resume`、暂停=`Pause`、删除=`delete`、设置=`options`、关于=`about`、退出=`quit`、**浏览器=`Google Chrome`**（工具栏"浏览器"按钮与浏览器窗口 Chrome 行共用同一张图，改它两处同时生效）。
+- 浏览器窗口内各浏览器图标走 `NeatBrowsersWindow.nib` 的 `imgChrome/imgFox/imgEdge` → 直接对应 Resources 下 `Google Chrome.png / Firefox.png / Microsoft Edge.png / Safari.png / Opera.png`。
+- 状态栏（菜单栏）图标 = `neaticon.png`（二进制里 `statusItemWithLength:` 之后紧跟 `neaticon` 字面量）。它 DPI 极高（200px@758），NSImage 点尺寸 = 200×72/758 ≈ 19pt，正好是菜单栏尺寸。**替换时必须保留 758 DPI**，否则菜单栏图标会撑爆或消失。
+- 渲染部署统一走 `icons/build_icons.sh`：读目标 PNG 的 pixelWidth + dpiWidth，渲染同尺寸再 `sips -s dpiWidth/-s dpiHeight` 写回元数据，零猜测。

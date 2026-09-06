@@ -1,2 +1,5 @@
 .DS_Store
 *.bak
+dist/
+icons/dist_out/
+*.nib.bak.credit

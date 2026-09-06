@@ -8,10 +8,13 @@ macOS 版 NeatDownloadManager 2 美化工具集：蓝色主题改造 + 全格式
 
 | 模块 | 说明 |
 |---|---|
+| 主题注入 `ndm_theme.dylib` | v6 全面现代化：文字按钮（原生圆角胶囊 + hover/按压 + 主按钮蓝底白字）、进度条（胶囊 + 轨道底色 + 顶部高光）、列表选中行圆角 + 行 hover 淡蓝底、复选/单选自绘、输入框圆角化 + 聚焦蓝框。类局部 hook，不污染 NSView/NSControl 基类。每项独立回退开关 `defaults write com.NeatDownloadManager ndm_theme_disable_<x> -bool YES` |
 | 蓝色进度条 | 主进度条 / 分段线程条 / 状态文字 全部从绿色改为 `#3D9BFF`（arm64+x64） |
-| 全格式图标 | 30+ 扩展名统一蓝色徽章图标（zip/pdf/exe/7z/rar/iso/dmg/doc/xls/mp3/mp4…） |
+| 全格式图标 | 30+ 扩展名统一圆角徽章图标，按类别配色（文档蓝/压缩包琥珀/视频紫/音频青/图片玫瑰/程序靛…） |
+| 工具栏/侧边栏图标 | 轻量描线风格 SVG（新建/继续/暂停/删除/设置/浏览器/关于/退出 + 侧边栏分类） |
+| 浏览器窗口图标 | Chrome/Firefox/Edge/Safari/Opera 统一蓝色描线风（`icons/browser/`） |
+| 状态栏图标 | 精致版蓝色下载徽章（`neaticon.png`，保留 758 DPI 元数据） |
 | 通用图标机制 | 原版 `getIconForExtension:` 本身就会查 `<ext>.png`：加新格式只需丢 PNG 进 Resources，零补丁（历史上的二进制 hook 是误判"死代码"的产物，已废弃，见 docs/NOTES.md 第 12 节） |
-| 工具栏/侧边栏图标 | 统一圆角方块徽章风格 SVG 源文件 |
 | 下载确认窗口 | IDM 风格：浏览器发起下载先弹确认窗（网址/文件名/浏览目录/开始取消），`ndm_confirm.dylib` swizzle 实现，见 `docs/CONFIRM_DIALOG.md` |
 | 分析工具 | arm64 反汇编 / selref 交叉引用 / 方法表解析（MachO + capstone） |
 
@@ -56,13 +59,20 @@ python3 scripts/patch_progress_color.py /Applications/NeatDownloadManager2.app
 # 2.（已废弃）扩展名图标 hook 不再需要：原版方法自带 imageNamed(<ext>) 查找
 #    直接把 icons/png/*.png 拷进 Resources 即可
 
-# 3. 放入自定义图标：把 icons/png/*.png 拷进 App Resources
-cp icons/png/*.png /Applications/NeatDownloadManager2.app/Contents/Resources/
+# 3. 放入自定义图标：一键渲染 SVG→PNG 并部署（严格保留目标文件像素尺寸与 DPI）
+bash icons/build_icons.sh /Applications/NeatDownloadManager2.app/Contents/Resources
 
-# 4. 检查 PNG DPI（状态栏图标消失的头号原因，见 docs/NOTES.md）
+# 4. 编译并注入主题 dylib（按钮/进度条/选中行/复选框/输入框现代化）
+clang -arch arm64 -arch x86_64 -dynamiclib -fobjc-arc -framework AppKit \
+  -o theme/ndm_theme.dylib theme/ndm_theme.m
+python3 scripts/patch_inject_dylib.py /Applications/NeatDownloadManager2.app \
+  @executable_path/../Frameworks/ndm_theme.dylib
+cp theme/ndm_theme.dylib /Applications/NeatDownloadManager2.app/Contents/Frameworks/
+
+# 5. 检查 PNG DPI（状态栏图标消失的头号原因，见 docs/NOTES.md）
 bash scripts/check_dpi.sh /Applications/NeatDownloadManager2.app/Contents/Resources
 
-# 5. 重签名（顺序很重要）
+# 6. 重签名（顺序很重要）
 bash scripts/resign.sh /Applications/NeatDownloadManager2.app
 ```
 
