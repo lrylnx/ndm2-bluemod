@@ -2,6 +2,8 @@
 
 macOS 版 NeatDownloadManager 2 美化工具集：蓝色主题改造 + 全格式自定义图标 + 二进制补丁脚本。
 
+> **v2 更新 — 完美 Mac 原生 UI 风格**：重绘了全部图标（工具栏 / 侧边栏 / 状态栏 / 浏览器 / 30+ 扩展名徽章），并全面改造按钮、编辑框、进度条、复选框、列表选中行——统一圆角胶囊 + hover 微交互 + `#3D9BFF` 强调色，视觉与原生 macOS 应用无异。
+
 > **免责声明**：本仓库不包含、也不分发 NeatDownloadManager 的任何二进制文件或原始资源。所有脚本仅供学习研究，请自行合法获取正软件，修改风险自负。
 
 ## 功能一览
@@ -20,20 +22,14 @@ macOS 版 NeatDownloadManager 2 美化工具集：蓝色主题改造 + 全格式
 
 ## 截图
 
-### 改造效果
-
-![全格式图标](screenshots/all_icons.png)
-![下载列表实测](screenshots/list_rows.png)
-![蓝色进度条](screenshots/blue_progress.png)
-
-### 界面实拍（汉化版）
+### 界面实拍（汉化版 · v2 完美 Mac 原生 UI 风格）
 
 ![主界面](screenshots/main_window.png)
-![设置-常规](screenshots/settings_general.png)
+![设置窗口](screenshots/settings_general.png)
 ![浏览器扩展](screenshots/browser_extensions.png)
 ![完全退出确认](screenshots/quit_dialog.png)
-![下载进行中](screenshots/download_active.png)
-![下载完成](screenshots/download_done.png)
+![下载前确认窗](screenshots/download_confirm.png)
+![下载进度窗](screenshots/download_progress.png)
 
 ## 目录结构
 
