@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="0.35" y2="1">
+<stop offset="0" stop-color="#D9F3FF"/>
+<stop offset="0.45" stop-color="#85CCFF"/>
+<stop offset="0.8" stop-color="#2E8AE6"/>
+<stop offset="1" stop-color="#1D6FBF"/>
+</linearGradient>
+<radialGradient id="glow" cx="0.5" cy="0.4" r="0.62">
+<stop offset="0" stop-color="#FFFFFF" stop-opacity="0.75"/>
+<stop offset="0.5" stop-color="#EAF8FF" stop-opacity="0.22"/>
+<stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+</radialGradient>
+<linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#FFFFFF" stop-opacity="0.42"/>
+<stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+</linearGradient>
+<linearGradient id="arrow" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#FFFFFF"/>
+<stop offset="1" stop-color="#C6EAFF"/>
+</linearGradient>
+<linearGradient id="arc" x1="0" y1="0" x2="1" y2="0">
+<stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+<stop offset="0.5" stop-color="#8FEFFF"/>
+<stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+</linearGradient>
+</defs>
+
+<!-- 圆角方块底 -->
+<rect x="32" y="32" width="960" height="960" rx="216" fill="url(#bg)"/>
+<rect x="32" y="32" width="960" height="960" rx="216" fill="url(#glow)"/>
+<rect x="32" y="32" width="960" height="520" rx="216" fill="url(#sheen)"/>
+<rect x="44" y="44" width="936" height="936" rx="205" fill="none" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="6"/>
+
+<!-- 光弧（科技感速度环） -->
+<path d="M168.1 540.9 A356 356 0 0 1 855.9 540.9 L826.9 548.6 A326 326 0 0 0 197.1 548.6 Z" fill="url(#arc)" opacity="0.85"/>
+<circle cx="183" cy="545" r="12" fill="#8FEFFF" opacity="0.9"/>
+<circle cx="841" cy="545" r="12" fill="#8FEFFF" opacity="0.9"/>
+
+<!-- 速度线 -->
+<g stroke="#FFFFFF" stroke-width="22" stroke-linecap="round" opacity="0.55">
+<path d="M300 300 H368"/><path d="M272 385 H350"/>
+<path d="M656 300 H724"/><path d="M674 385 H752"/>
+</g>
+
+<!-- 下载箭头：杆 + 圆角箭头 -->
+<rect x="446" y="190" width="132" height="400" rx="44" fill="#FFFFFF"/>
+<path d="M330 425 L512 610 L694 425" fill="none" stroke="#FFFFFF" stroke-width="116" stroke-linecap="round" stroke-linejoin="round"/>
+
+<!-- 托盘 -->
+<path d="M288 722 V778 Q288 838 348 838 H676 Q736 838 736 778 V722" fill="none" stroke="#FFFFFF" stroke-opacity="0.95" stroke-width="78" stroke-linecap="round"/>
+
+<!-- 星芒 -->
+<path d="M815 195 l16 40 l40 16 l-40 16 l-16 40 l-16 -40 l-40 -16 l40 -16 Z" fill="#FFFFFF" opacity="0.95"/>
+<path d="M215 620 l10 25 l25 10 l-25 10 l-10 25 l-10 -25 l-25 -10 l25 -10 Z" fill="#FFFFFF" opacity="0.8"/>
+</svg>

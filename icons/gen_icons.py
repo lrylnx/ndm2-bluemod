@@ -162,8 +162,24 @@ with open(os.path.join(TOOL, "custombtnpressed.svg"), "w") as f:
 with open(os.path.join(TOOL, "custombtndisable.svg"), "w") as f:
     f.write(line('<path d="M32 60 L50 38 L68 60"/>', sw=9, color='#B8C4D0'))
 
-# neaticon：状态栏 19pt 图标，保持实心徽章（小尺寸下描线不可读），仅精修
+# neaticon：状态栏 19pt 图标，与 AppIcon 同风格（浅蓝渐变 + 白色箭头托盘）
+NEATICON = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="0.35" y2="1">
+<stop offset="0" stop-color="#D9F3FF"/><stop offset="0.45" stop-color="#85CCFF"/>
+<stop offset="0.8" stop-color="#2E8AE6"/><stop offset="1" stop-color="#1D6FBF"/></linearGradient>
+<linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#FFFFFF" stop-opacity="0.40"/>
+<stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient>
+</defs>
+<rect x="5" y="5" width="90" height="90" rx="24" fill="url(#bg)"/>
+<rect x="5" y="5" width="90" height="48" rx="24" fill="url(#sheen)"/>
+<rect x="6.25" y="6.25" width="87.5" height="87.5" rx="22.75" fill="none" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="1.5"/>
+<rect x="44" y="21" width="12" height="34" rx="4" fill="#FFFFFF"/>
+<path d="M31 45 L50 63 L69 45" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M28 70 V74 Q28 79 33 79 H67 Q72 79 72 74 V70" fill="none" stroke="#FFFFFF" stroke-opacity="0.95" stroke-width="6" stroke-linecap="round"/>
+<path d="M79 22 l1.6 4 l4 1.6 l-4 1.6 l-1.6 4 l-1.6 -4 l-4 -1.6 l4 -1.6 Z" fill="#FFFFFF" opacity="0.9"/>
+</svg>'''
 with open(os.path.join(TOOL, "neaticon.svg"), "w") as f:
-    f.write(badge(None, "blue",
-        glyph='<path d="M50 28 V50"/><path d="M40 41 L50 52 L60 41"/><path d="M34 60 V68 H66 V60"/>'))
+    f.write(NEATICON)
 print("done")
