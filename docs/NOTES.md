@@ -77,3 +77,8 @@ entsize 高位 `0x80000000` 表示 relative method list：count 在 +4，name/ty
 - 浏览器窗口内各浏览器图标走 `NeatBrowsersWindow.nib` 的 `imgChrome/imgFox/imgEdge` → 直接对应 Resources 下 `Google Chrome.png / Firefox.png / Microsoft Edge.png / Safari.png / Opera.png`。
 - 状态栏（菜单栏）图标 = `neaticon.png`（二进制里 `statusItemWithLength:` 之后紧跟 `neaticon` 字面量）。它 DPI 极高（200px@758），NSImage 点尺寸 = 200×72/758 ≈ 19pt，正好是菜单栏尺寸。**替换时必须保留 758 DPI**，否则菜单栏图标会撑爆或消失。
 - 渲染部署统一走 `icons/build_icons.sh`：读目标 PNG 的 pixelWidth + dpiWidth，渲染同尺寸再 `sips -s dpiWidth/-s dpiHeight` 写回元数据，零猜测。
+
+## 15. 强制浅色模式（2026-09-10）
+- 暗色系统下 NSButton/NSTextField 等原生控件自动切深色外观，与主题 dylib 的浅色配色（白底蓝边 hover 等）冲突，按钮显示异常。
+- 解法：`plutil -insert NSRequiresAquaSystemAppearance -bool YES Contents/Info.plist` 后重签。App 级锁定 Aqua 浅色，系统切暗色不受影响；无需 hook `NSApp.appearance`。
+- 已实测：系统暗色模式下 NDM 主界面/设置/弹窗全部保持浅色主题。
