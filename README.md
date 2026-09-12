@@ -17,7 +17,7 @@ macOS 版 NeatDownloadManager 2 美化工具集：蓝色主题改造 + 全格式
 | 浏览器窗口图标 | Chrome/Firefox/Edge/Safari/Opera 统一蓝色描线风（`icons/browser/`） |
 | 状态栏图标 | 精致版蓝色下载徽章（`neaticon.png`，保留 758 DPI 元数据） |
 | 通用图标机制 | 原版 `getIconForExtension:` 本身就会查 `<ext>.png`：加新格式只需丢 PNG 进 Resources，零补丁（历史上的二进制 hook 是误判"死代码"的产物，已废弃，见 docs/NOTES.md 第 12 节） |
-| 下载确认窗口 | IDM 风格：浏览器发起下载先弹确认窗（网址/文件名/浏览目录/开始取消），`ndm_confirm.dylib` swizzle 实现，见 `docs/CONFIRM_DIALOG.md` |
+| 下载确认窗口 | IDM 风格：浏览器发起下载先弹确认窗（网址/**可编辑文件名**/浏览目录/开始取消），`ndm_confirm.dylib` swizzle 实现，见 `docs/CONFIRM_DIALOG.md`。自定义文件名通过改写 C++ 请求结构体的 `Url.FileName` 生效（协议 `3:` 字段不是文件名，早期误用它会导致下载失败，已修）。⚠️ 「保存到」框目前仅影响显示，实际仍落 NDM 分类目录，详见文档「已知限制」 |
 | 强制浅色模式 | Info.plist 注入 `NSRequiresAquaSystemAppearance=YES`，系统暗色模式下 App 仍锁定 Aqua 浅色外观，避免原生控件变深与浅色主题冲突 |
 | 分析工具 | arm64 反汇编 / selref 交叉引用 / 方法表解析（MachO + capstone） |
 

@@ -2,19 +2,52 @@
 // Hook:
 //   1) -[AppDelegate handleBrowserDownloadRequest:]  弹出确认窗；取消则不启动下载、不弹主界面
 //   2) -[NeatDownloadWindow initWithValues:appStatusMenu:request:tempOutputPath:finalOutputPath:rowIdx:doResume:]
-//      -[NeatDownloadWindowMKV initMKVWithValues:...]  用用户所选目录覆盖 temp/final 输出路径
-// 编译:
-//   clang -arch arm64 -arch x86_64 -dynamiclib -fobjc-arc \
+//      -[NeatDownloadWindowMKV initMKVWithValues:...]
+//      用用户所选目录覆盖 temp/final 输出路径，并把改名写进 C++ 请求结构体
+//      （NeatDownloadRequest::Url.FileName，见 scripts/ndm_request_name.mm）
+//
+// 改名机制说明（重要）：
+//   协议 payload 的 "3:" 字段**不是文件名**，而是第二路媒体流 URL
+//   （音视频分离时引擎用它合成 MKV）。若把文件名塞进 "3:"，会被引擎误判为
+//   视频合成下载 → 强制改名 .mkv / 分类变 Video / 下载失败。
+//   正确做法：保持 payload 原样，直接在 C++ 请求结构体里改 Url.FileName。
+//
+// 编译（两个源文件，注意用 clang++ 以链接 libc++ —— .mm 里调用了 std::string）:
+//   clang++ -arch arm64 -arch x86_64 -dynamiclib -fobjc-arc \
 //     -framework Foundation -framework AppKit \
 //     -install_name @executable_path/../Frameworks/ndm_confirm.dylib \
-//     -o ndm_confirm.dylib ndm_confirm.m
+//     -o ndm_confirm.dylib ndm_confirm.m ndm_request_name.mm
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import <objc/runtime.h>
 
+// C++ 侧（ndm_request_name.mm）：改 NeatDownloadRequest::Url.FileName
+extern int ndm_set_request_file_name(void *request, const char *utf8_name);
+
 static NSString *gOverrideDir = nil;   // 待消费的覆盖目录
+static NSString *gOverrideName = nil;  // 待消费的覆盖文件名（nil = 不改名）
 static NSString *kLastDirKey = @"ndm_confirm_last_dir";
+
+// 文件日志：App 是托盘态常驻，NSLog 在沙箱/无终端时看不到，写文件便于排查
+// 开关: defaults write com.NeatDownloadManager ndm_confirm_log -bool YES
+static void DbgLog(NSString *fmt, ...) {
+    if (![NSUserDefaults.standardUserDefaults boolForKey:@"ndm_confirm_log"]) return;
+    va_list ap; va_start(ap, fmt);
+    NSString *msg = [[NSString alloc] initWithFormat:fmt arguments:ap];
+    va_end(ap);
+    NSString *line = [NSString stringWithFormat:@"%.3f %@\n",
+                      [NSDate date].timeIntervalSince1970, msg];
+    NSString *path = @"/tmp/ndm_confirm.log";
+    NSFileHandle *fh = [NSFileHandle fileHandleForWritingAtPath:path];
+    if (!fh) {
+        [line writeToFile:path atomically:YES encoding:NSUTF8StringEncoding error:NULL];
+        return;
+    }
+    @try { [fh seekToEndOfFile]; [fh writeData:[line dataUsingEncoding:NSUTF8StringEncoding]]; }
+    @catch (NSException *e) {}
+    [fh closeFile];
+}
 
 static NSColor *BlueColor(void) {
     return [NSColor colorWithCalibratedRed:0.239 green:0.608 blue:1.0 alpha:1.0]; // #3D9BFF
@@ -74,35 +107,16 @@ static NSString *DeriveNameFromURL(NSString *url) {
     return name;
 }
 
-// 把 payload 中 3: 文件名行替换为 newName（没有则插到 2: 行之后）
-// 注意：不能追加到末尾——payload 末尾可能有空行/尾部标记，追加会破坏解析
-static NSString *ReplaceNameInPayload(NSString *payload, NSString *newName) {
-    NSMutableArray *lines = [[payload componentsSeparatedByString:@"\r\n"] mutableCopy];
-    BOOL replaced = NO;
-    for (NSUInteger i = 0; i < lines.count; i++) {
-        if ([lines[i] hasPrefix:@"3:"]) {
-            if (!replaced) {
-                lines[i] = [NSString stringWithFormat:@"3:%@", newName];
-                replaced = YES;
-            } else {
-                [lines removeObjectAtIndex:i--];
-            }
-        }
-    }
-    if (!replaced) {
-        for (NSUInteger i = 0; i < lines.count; i++) {
-            if ([lines[i] hasPrefix:@"2:"]) {
-                [lines insertObject:[NSString stringWithFormat:@"3:%@", newName]
-                            atIndex:i + 1];
-                replaced = YES;
-                break;
-            }
-        }
-        if (!replaced) [lines addObject:[NSString stringWithFormat:@"3:%@", newName]];
-    }
-    NSString *out = [lines componentsJoinedByString:@"\r\n"];
-    NSLog(@"[ndm_confirm] 最终payload=[%@]", [out stringByReplacingOccurrencesOfString:@"\r\n" withString:@" | "]);
-    return out;
+// 用户改了文件名时，把它写进 C++ 请求结构体的 Url.FileName。
+// 必须在调用原 initWithValues: 之前改：原方法会拿它算出窗口 fileName / 落盘名 / 数据库 filename。
+// 失败（结构校验不通过）时保持原文件名，绝不让下载失败。
+static void PatchRequestName(void *request, NSString *name) {
+    if (!request || !name.length) return;
+    const char *utf8 = name.UTF8String;
+    if (!utf8) return;
+    int rc = ndm_set_request_file_name(request, utf8);
+    if (rc == 0) DbgLog(@"[rename] 请求文件名 -> %@", name);
+    else         DbgLog(@"[rename] 改写请求文件名失败 rc=%d，保持原文件名", rc);
 }
 
 #pragma mark - 确认窗口
@@ -334,19 +348,9 @@ static void HookedHandleRequest(id self_, SEL _cmd, id payload) {
         if (orig) ((void(*)(id, SEL, id))orig)(self_, _cmd, payload);
         return;
     }
-    // 调试开关: defaults write com.NeatDownloadManager ndm_confirm_passthrough -bool YES
-    if ([NSUserDefaults.standardUserDefaults boolForKey:@"ndm_confirm_passthrough"]) {
-        NSLog(@"[ndm_confirm] passthrough 直通模式");
-        if (orig) ((void(*)(id, SEL, id))orig)(self_, _cmd, payload);
-        return;
-    }
     NSString *origFname = fname;                 // payload 里的原始文件名（可能为 nil）
     if (!fname.length) fname = DeriveNameFromURL(url);   // 兜底：从 URL 提取
-    NSLog(@"[ndm_confirm] payload=[%@]",
-          [payload isKindOfClass:[NSString class]]
-              ? [(NSString *)payload substringToIndex:MIN((NSUInteger)400, [(NSString *)payload length])]
-              : payload);
-    NSLog(@"[ndm_confirm] url=%@ origFname=%@ derived=%@", url, origFname, fname);
+    DbgLog(@"[confirm] url=%@ origFname=%@ derived=%@", url, origFname, fname);
 
     // 记录弹窗前状态：取消时还原，避免弹出主界面
     NSWindow *mainWin = nil;
@@ -366,31 +370,38 @@ static void HookedHandleRequest(id self_, SEL _cmd, id payload) {
         return;                      // 取消 → 不调用原方法，下载不开始
     }
 
-    // 用户改了文件名才改写 payload（保持与原生流程一致，避免干扰引擎探测）
+    // 用户改了文件名才记录改名意图（**不改 payload**：payload 的 3: 是第二路媒体流 URL，
+    // 不是文件名，改写它会被引擎当成音视频合成下载 → 下载必然失败）
     NSString *newName = r[@"name"];
-    BOOL needReplace = NO;
+    BOOL needRename = NO;
     if (newName.length) {
-        if (origFname.length) needReplace = ![newName isEqualToString:origFname];
-        else if (fname.length) needReplace = ![newName isEqualToString:fname];
+        if (origFname.length) needRename = ![newName isEqualToString:origFname];
+        else if (fname.length) needRename = ![newName isEqualToString:fname];
     }
-    if (needReplace) payload = ReplaceNameInPayload(payload, newName);
+    gOverrideName = needRename ? newName : nil;
+    DbgLog(@"[confirm] origFname=[%@] fname=[%@] 用户输入=[%@] needRename=%d",
+           origFname, fname, newName, needRename);
 
     gOverrideDir = r[@"dir"];
     @try {
         if (orig) ((void(*)(id, SEL, id))orig)(self_, _cmd, payload);
     } @finally {
         gOverrideDir = nil;          // 兜底清除（正常由 init hook 消费）
+        gOverrideName = nil;
     }
 }
 
 // request 是 C++ 结构体指针，必须用 void*，绝不能声明为 id（ARC 会 retain 导致崩溃）
 static NSString *ApplyOverride(NSString *tempPath, NSString **finalPathPtr) {
-    if (!gOverrideDir) return tempPath;
     NSString *finalPath = *finalPathPtr;
+    DbgLog(@"[init] 原始参数 temp=[%@] final=[%@] dir=[%@] name=[%@]",
+           tempPath, finalPath, gOverrideDir, gOverrideName);
+    if (!gOverrideDir) return tempPath;
     if (![finalPath isKindOfClass:[NSString class]] || !finalPath.length) return tempPath;
     NSString *dir = gOverrideDir;
     gOverrideDir = nil;
-    NSLog(@"[ndm_confirm] 原始参数 temp=%@ final=%@", tempPath, finalPath);
+    NSString *name = gOverrideName;
+    gOverrideName = nil;
     NSString *newTemp = tempPath, *newFinal = finalPath;
     // final/temp 可能是目录（无扩展名）或完整文件路径（有扩展名）
     if ([[finalPath pathExtension] length] > 0)
@@ -400,25 +411,36 @@ static NSString *ApplyOverride(NSString *tempPath, NSString **finalPathPtr) {
     if ([tempPath isKindOfClass:[NSString class]] && tempPath.length &&
         [[tempPath pathExtension] length] == 0)
         newTemp = [dir copy];                       // temp 是目录 → 直接替换
-    NSLog(@"[ndm_confirm] 路径覆盖: final=%@ temp=%@", newFinal, newTemp);
+    DbgLog(@"[init] 路径覆盖: final=[%@] temp=[%@] (期望文件名=[%@])", newFinal, newTemp, name);
     *finalPathPtr = newFinal;
     return newTemp;
 }
 
+// libc++ std::string 内存布局说明（本 App 实测，ndm_request_name.mm 里做同样校验）：
+//   短串 = data[0..22] + '\0' + 长度字节在 +23（最高位 0）
+//   长串 = 堆指针(0) / 长度(8) / 容量|最高位(16)
+// 改名已在 C++ 侧（PatchRequestName）完成，窗口的 fileName / 落盘名 / 数据库 filename
+// 都由原 initWithValues: 从被改写后的结构体派生，故此处无需再动 ObjC ivar。
 static id HookedDLInit(id self_, SEL _cmd, id values, id menu, void *request,
                        NSString *tempPath, NSString *finalPath, NSInteger rowIdx, BOOL resume) {
+    NSString *wantName = gOverrideName;      // ApplyOverride 会消费，先留存
+    PatchRequestName(request, wantName);
     tempPath = ApplyOverride(tempPath, &finalPath);
     IMP orig = OrigIMP(gDlWinClass, @selector(initWithValues:appStatusMenu:request:tempOutputPath:finalOutputPath:rowIdx:doResume:));
-    return ((id(*)(id, SEL, id, id, void *, NSString *, NSString *, NSInteger, BOOL))orig)(
+    id win = ((id(*)(id, SEL, id, id, void *, NSString *, NSString *, NSInteger, BOOL))orig)(
         self_, _cmd, values, menu, request, tempPath, finalPath, rowIdx, resume);
+    return win;
 }
 
 static id HookedDLInitMKV(id self_, SEL _cmd, id values, id menu, void *request,
                           NSString *tempPath, NSString *finalPath, NSInteger rowIdx, BOOL resume) {
+    NSString *wantName = gOverrideName;
+    PatchRequestName(request, wantName);
     tempPath = ApplyOverride(tempPath, &finalPath);
     IMP orig = OrigIMP(gDlWinMKVClass, @selector(initMKVWithValues:appStatusMenu:request:tempOutputPath:finalOutputPath:rowIdx:doResume:));
-    return ((id(*)(id, SEL, id, id, void *, NSString *, NSString *, NSInteger, BOOL))orig)(
+    id win = ((id(*)(id, SEL, id, id, void *, NSString *, NSString *, NSInteger, BOOL))orig)(
         self_, _cmd, values, menu, request, tempPath, finalPath, rowIdx, resume);
+    return win;
 }
 
 #pragma mark - 设置/浏览器/关于 弹窗居中到主界面
@@ -530,25 +552,5 @@ static void ndm_confirm_init(void) {
         Exchange(objc_getClass("NSWindowController"), @selector(showWindow:), (IMP)HookedShowWindow);
 
         NSLog(@"[ndm_confirm] hooks installed");
-
-        // 调试观察器: defaults write com.NeatDownloadManager ndm_confirm_watch -bool YES
-        if ([NSUserDefaults.standardUserDefaults boolForKey:@"ndm_confirm_watch"]) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [NSTimer scheduledTimerWithTimeInterval:3.0 repeats:YES block:^(NSTimer *t) {
-                    static Ivar ivConn = NULL, ivName = NULL;
-                    if (!ivConn) {
-                        ivConn = class_getInstanceVariable(objc_getClass("NeatDownloadWindow"), "lastConnectionsCount");
-                        ivName = class_getInstanceVariable(objc_getClass("NeatDownloadWindow"), "fileName");
-                    }
-                    for (NSWindow *w in NSApp.windows) {
-                        if (![w isKindOfClass:objc_getClass("NeatDownloadWindow")]) continue;
-                        NSString *name = ivName ? object_getIvar(w, ivName) : nil;
-                        long long conn = ivConn ? *(long long *)((char *)(__bridge void *)w + ivar_getOffset(ivConn)) : -1;
-                        NSLog(@"[ndm_confirm][watch] %@ connections=%lld", name, conn);
-                    }
-                }];
-            });
-            NSLog(@"[ndm_confirm] watcher ON");
-        }
     }
 }
