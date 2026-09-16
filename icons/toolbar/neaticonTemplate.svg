@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- NDM 状态栏（菜单栏）图标 —— 单色模板图。
+       资源名以 "Template" 结尾，macOS 会自动 isTemplate=YES，
+       菜单栏按钮按当前明暗把不透明区域渲染成纯黑/纯白，随系统自动变色。
+       注意：不可加背景色块，否则整块都会变成实心方块。
+       部署名: Resources/neaticonTemplate.png (200px @ 758dpi)。 -->
+  <rect x="44.5" y="12" width="11" height="32" rx="5.5" fill="#000000"/>
+  <path d="M25 38 L50 61 L75 38" fill="none" stroke="#000000" stroke-width="12"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M19 74 V80 Q19 87 26 87 H74 Q81 87 81 80 V74" fill="none" stroke="#000000"
+        stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -2,6 +2,8 @@
 
 macOS 版 NeatDownloadManager 2 美化工具集：蓝色主题改造 + 全格式自定义图标 + 二进制补丁脚本。
 
+> **v2.2 更新 — 状态栏图标跟随系统明暗**：菜单栏图标从固定蓝色改为单色自适应 —— 浅色菜单栏渲染纯黑、深色菜单栏渲染纯白，和系统其他图标风格统一。实现见 `scripts/ndm_statusicon.m`，踩坑记录见 `docs/STATUS_ICON.md`。
+
 > **v2 更新 — 完美 Mac 原生 UI 风格**：重绘了全部图标（工具栏 / 侧边栏 / 状态栏 / 浏览器 / 30+ 扩展名徽章），并全面改造按钮、编辑框、进度条、复选框、列表选中行——统一圆角胶囊 + hover 微交互 + `#3D9BFF` 强调色，视觉与原生 macOS 应用无异。
 
 > **免责声明**：本仓库不包含、也不分发 NeatDownloadManager 的任何二进制文件或原始资源。所有脚本仅供学习研究，请自行合法获取正软件，修改风险自负。
@@ -15,7 +17,8 @@ macOS 版 NeatDownloadManager 2 美化工具集：蓝色主题改造 + 全格式
 | 全格式图标 | 30+ 扩展名统一圆角徽章图标，按类别配色（文档蓝/压缩包琥珀/视频紫/音频青/图片玫瑰/程序靛…） |
 | 工具栏/侧边栏图标 | 轻量描线风格 SVG（新建/继续/暂停/删除/设置/浏览器/关于/退出 + 侧边栏分类） |
 | 浏览器窗口图标 | Chrome/Firefox/Edge/Safari/Opera 统一蓝色描线风（`icons/browser/`） |
-| 状态栏图标 | 精致版蓝色下载徽章（`neaticon.png`，保留 758 DPI 元数据） |
+| 状态栏图标单色自适应 | 菜单栏图标改为单色并**随系统明暗自动黑白**：浅色菜单栏渲染纯黑、深色渲染纯白，与系统图标风格一致。`ndm_statusicon.dylib` 用 `drawingHandler` 动态图 + `labelColor`，KVO 监听外观变化触发重绘。原彩色 `neaticon.png` 保留给退出/关于对话框使用，状态栏另用 `neaticonTemplate.png` |
+| 主题色演进 | 进度条 / 强调色统一 `#3D9BFF`；状态栏曾为蓝色徽章（v2.0），v2.2 起改为单色模板化 |
 | 通用图标机制 | 原版 `getIconForExtension:` 本身就会查 `<ext>.png`：加新格式只需丢 PNG 进 Resources，零补丁（历史上的二进制 hook 是误判"死代码"的产物，已废弃，见 docs/NOTES.md 第 12 节） |
 | 下载确认窗口 | IDM 风格：浏览器发起下载先弹确认窗（网址/**可编辑文件名**/浏览目录/开始取消），`ndm_confirm.dylib` swizzle 实现，见 `docs/CONFIRM_DIALOG.md`。自定义文件名通过改写 C++ 请求结构体的 `Url.FileName` 生效（协议 `3:` 字段不是文件名，早期误用它会导致下载失败，已修）。⚠️ 「保存到」框目前仅影响显示，实际仍落 NDM 分类目录，详见文档「已知限制」 |
 | 强制浅色模式 | Info.plist 注入 `NSRequiresAquaSystemAppearance=YES`，系统暗色模式下 App 仍锁定 Aqua 浅色外观，避免原生控件变深与浅色主题冲突 |
@@ -66,14 +69,25 @@ python3 scripts/patch_inject_dylib.py /Applications/NeatDownloadManager2.app \
   @executable_path/../Frameworks/ndm_theme.dylib
 cp theme/ndm_theme.dylib /Applications/NeatDownloadManager2.app/Contents/Frameworks/
 
-# 5. 检查 PNG DPI（状态栏图标消失的头号原因，见 docs/NOTES.md）
+# 5. 状态栏图标单色自适应（跟随菜单栏明暗自动黑白）
+#    渲染单色 glyph -> Resources/neaticonTemplate.png（名字以 Template 结尾是关键）
+#    注意：不要动 neaticon.png，退出/关于对话框还在用它
+clang -arch arm64 -arch x86_64 -dynamiclib -fobjc-arc \
+  -framework Foundation -framework AppKit \
+  -install_name @executable_path/../Frameworks/ndm_statusicon.dylib \
+  -o scripts/ndm_statusicon.dylib scripts/ndm_statusicon.m
+python3 scripts/patch_inject_dylib.py /Applications/NeatDownloadManager2.app \
+  @executable_path/../Frameworks/ndm_statusicon.dylib
+cp scripts/ndm_statusicon.dylib /Applications/NeatDownloadManager2.app/Contents/Frameworks/
+
+# 6. 检查 PNG DPI（状态栏图标消失的头号原因，见 docs/NOTES.md）
 bash scripts/check_dpi.sh /Applications/NeatDownloadManager2.app/Contents/Resources
 
-# 6. 强制浅色模式（修复系统暗色模式下按钮异常）
+# 7. 强制浅色模式（修复系统暗色模式下按钮异常）
 plutil -insert NSRequiresAquaSystemAppearance -bool YES \
   /Applications/NeatDownloadManager2.app/Contents/Info.plist
 
-# 7. 重签名（顺序很重要）
+# 8. 重签名（顺序很重要）
 bash scripts/resign.sh /Applications/NeatDownloadManager2.app
 ```
 
@@ -81,6 +95,7 @@ bash scripts/resign.sh /Applications/NeatDownloadManager2.app
 
 ## 主要踩坑（详见 docs/NOTES.md）
 
+- **状态栏图标自适应**：macOS 只对「资源名以 `Template` 结尾」的图做明暗自适应；而自定义 `NSView.drawRect:` 里直接绘制时 template 属性**不生效**，必须用 `drawingHandler` 动态图 + `labelColor`（详见 docs/STATUS_ICON.md）
 - **PNG DPI**：NSImage 点尺寸 = 像素 × 72/DPI，替换 PNG 不保留原 DPI 会让状态栏图标"消失"
 - **codesign**：含 .appex 时先签插件再 deep 签主 App；中断残留 `*.cstemp*` 会污染 seal
 - **颜色修改**：颜色是 `colorWithCalibratedRed:...` 的字面量池（__const double），池可能被多处共享，改前必须全量扫引用

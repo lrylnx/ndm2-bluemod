@@ -41,6 +41,18 @@ if [ $# -gt 0 ]; then
     done
   done
 else
+  # 状态栏单色 glyph 是「新增资源」，原版 App 里没有这个文件，
+  # 而 deploy() 只处理已存在的目标 —— 这里先用 neaticon.png 的尺寸/DPI 建出来。
+  TPL_SVG="$ROOT/toolbar/neaticonTemplate.svg"
+  if [ -f "$TPL_SVG" ] && [ ! -f "$RES/neaticonTemplate.png" ]; then
+    ref="$RES/neaticon.png"
+    px=$(sips -g pixelWidth "$ref" 2>/dev/null | awk '/pixelWidth/{print $2}')
+    dpi=$(sips -g dpiWidth "$ref" 2>/dev/null | awk '/dpiWidth/{print $2}')
+    [ -z "$px" ] && px=200
+    [ -z "$dpi" ] && dpi=758
+    render_one "$TPL_SVG" "$px" "$dpi" "$RES/neaticonTemplate.png"
+    echo "OK neaticonTemplate.png ${px}px@${dpi} (新增)"
+  fi
   for f in "$ROOT"/svg/*.svg; do deploy "$f" "$(basename "${f%.svg}").png"; done
   for f in "$ROOT"/sidebar/*.svg; do deploy "$f" "$(basename "${f%.svg}").png"; done
   for f in "$ROOT"/toolbar/*.svg; do deploy "$f" "$(basename "${f%.svg}").png"; done
